@@ -1,7 +1,7 @@
 "use client"
 import { cn } from '@/lib/utils'
 import { ChevronLeft, ChevronsLeft, MenuIcon, Plus, PlusCircle, Search, Settings, Trash } from 'lucide-react'
-import { usePathname } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import { useEffect, useRef, ElementRef, useState } from 'react'
 import { useMediaQuery } from 'usehooks-ts'
 import { toast } from 'sonner'
@@ -11,9 +11,16 @@ import UserItems from './user-item'
 import { api } from '@/convex/_generated/api'
 import Item from './Item'
 import DocumentList from './Document-list'
+import { useSearch } from '@/hooks/use-search'
+import { useSettings } from '@/hooks/use-settings'
+import TrashBar from './Trash-Bar'
+import Navbar from './Navbar'
 
 const Navigation = () => {
   const pathName = usePathname();
+  const params = useParams()
+  const search = useSearch();
+  const settings = useSettings();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const create = useMutation(api.documents.create)
   const isResizinref = useRef(false);
@@ -133,8 +140,8 @@ const Navigation = () => {
       </div>
       <div>
         <UserItems />
-        <Item label='Search' icon={Search} isSearch onClick={() => {}} />
-        <Item label='Settings' icon={Settings} onClick={() => {}} />
+        <Item label='Search' icon={Search} isSearch onClick={search.onOpen} />
+        <Item label='Settings' icon={Settings} onClick={settings.onOpen} />
         <Item onClick={handleCreate} label={"New Page"} icon={PlusCircle} /> 
       </div>
       <div className='mt-4 '>
@@ -145,7 +152,7 @@ const Navigation = () => {
             <Item label='Trash' icon={Trash}  />
           </PopoverTrigger>
           <PopoverContent side={isMobile ? "bottom" : "right"} className='p-0 w-72'>
-            <p>Trash Box</p>
+            <TrashBar />
           </PopoverContent>
         </Popover>
       </div>
@@ -160,9 +167,13 @@ const Navigation = () => {
       isresetting && "transition-all ease-in-out duration-300",
       isMobile && 'left-0 w-full'
     )}>
+      {!!params.documentid ? (
+        <Navbar isCollapsed={isCollapsed} onResetWidth={resetWidth} />
+      ) : (
       <nav className='bg-transparent px-3 py-2 w-full'>
         {isCollapsed && <MenuIcon onClick={resetWidth} role='button' className='h-6 w-6 text-muted-foreground' />}
       </nav>
+      )}
     </div>
     </>
   )
